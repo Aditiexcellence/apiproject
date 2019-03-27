@@ -48,7 +48,10 @@
           </b-col>
         </b-row>
         <center>
-          <b-button @click="adddata">ADD</b-button>
+          <b-button @click="adddata" v-if="canShowadd">ADD</b-button>
+        </center>
+        <center>
+          <b-button @click="updatedata(newElement)" v-if="canShowupdate">Update</b-button>
         </center>
       </b-form>
     </b-modal>
@@ -60,6 +63,7 @@
     </b-container>
     <table class="table table-bordered text-centered" v-if="canShowtable">
       <thead>
+        <th v-if="canShowrollno">Roll no</th>
         <th v-if="canShowname">Name</th>
         <th v-if="canShowaveragepersubject">Math</th>
         <th v-if="canShowaveragepersubject">English</th>
@@ -74,6 +78,7 @@
       </thead>
       <tbody>
         <tr v-for="(newElement,index) in studentable" v-bind:key="index">
+          <td v-if="canShowrollno">{{newElement.roll_no}}</td>
           <td v-if="canShowname">{{newElement.name}}</td>
           <td v-if="canShowaveragepersubject">{{newElement.math}}</td>
           <td v-if="canShowaveragepersubject">{{newElement.english}}</td>
@@ -84,7 +89,7 @@
           <td v-if="canShowtopper">{{newElement.total}}</td>
           <td v-if="showAverage">{{newElement.average_score}}</td>
           <td v-if="canShowbutton">
-            <a href="#" v-on:click="deleteItem(index)">Delete</a>
+            <a href="#" v-on:click="deleteItem(newElement,index)">Delete</a>
           </td>
           <td v-if="canShowbutton">
             <a
@@ -107,6 +112,7 @@ export default {
       modalShow: false,
       studentable: [],
       newElement: {
+        roll_no: 0,
         name: "",
         math: "",
         english: "",
@@ -120,12 +126,24 @@ export default {
       canShowaveragepersubject: true,
       canShowbutton: true,
       canShowname: true,
-      showAverage: false
+      showAverage: false,
+      canShowrollno: true,
+      canShowupdate: false,
+      canShowadd: true
     };
+  },
+  created() {
+    this.getdata();
   },
   methods: {
     adddata: function() {
       this.canShowtable = true;
+      this.canShowtopper = false;
+      this.canShowaveragepersubject = true;
+      this.canShowname = true;
+      this.canShowrollno = true;
+      this.canShowbutton = true;
+      this.showAverage = false;
       let math = Number(this.newElement.math);
       let english = Number(this.newElement.english);
       let science = Number(this.newElement.science);
@@ -146,16 +164,7 @@ export default {
           eco: eco
         }
       }).then(response => {
-        console.log(response.data, "111111111");
-      });
-      this.axios("http://127.0.0.1:5000/exam/get_all").then(res => {
-        // console.log(res.data);
-        var somedata = res.data;
-        this.studentable = res.data;
-        somedata.forEach(element => {
-          console.log(element._id,'7788898788787878766666666666666');
-          localStorage.setItem("token", JSON.stringify(element._id));
-        });
+        this.getdata();
       });
       this.newElement = {
         name: "",
@@ -167,7 +176,6 @@ export default {
         eco: ""
       };
       this.modalShow = !this.modalShow;
-      console.log(response, "555555555555");
     },
     findtopper: function() {
       this.canShowtopper = true;
@@ -176,8 +184,8 @@ export default {
       this.canShowname = true;
       this.showAverage = false;
       this.canShowbutton = false;
+      this.canShowrollno = false;
       this.axios("http://127.0.0.1:5000/exam/get_max").then(response => {
-        console.log(response.data);
         this.studentable = response;
       });
     },
@@ -188,8 +196,8 @@ export default {
       this.canShowtopper = false;
       this.canShowaveragepersubject = true;
       this.showAverage = false;
+      this.canShowrollno = false;
       this.axios("http://127.0.0.1:5000/exam/get_t_avg").then(response => {
-        console.log(response, "76876786");
         this.studentable = response.data;
       });
     },
@@ -200,33 +208,102 @@ export default {
       this.canShowtopper = false;
       this.canShowaveragepersubject = false;
       this.showAverage = true;
+      this.canShowrollno = false;
       this.axios("http://127.0.0.1:5000/exam/get_max").then(response => {}),
         this.axios("http://127.0.0.1:5000/exam/avg").then(res => {
-          console.log(res.data, "99909090");
           this.studentable = res.data;
         });
     },
-    deleteItem: function() {
+    deleteItem: function(value, index) {
       this.canShowname = true;
       this.canShowbutton = true;
       this.canShowtable = true;
       this.canShowtopper = false;
       this.canShowaveragepersubject = true;
       this.showAverage = false;
-      console.log(this.token, "4w4w");
-      let id = JSON.parse(localStorage.getItem("token"));
-      console.log(id, "76687");
-      this.axios.delete(`http://127.0.0.1:5000/exam/delete_record/{id}`,{params: {id}}).then(response =>{
-        console.log(response);
-        this.studentable= response;
-      });
-
-      this.axios("http://127.0.0.1:5000/exam/get_all").then(res => {
-        console.log(res.data);
-        this.studentable = res.data;
+      this.canShowrollno = true;
+      let id = JSON.parse(localStorage.getItem("array"));
+      id.forEach((element, index) => {
+        if (element.roll_no === value.roll_no) {
+          let token = element._id;
+          this.axios
+            .delete(`http://127.0.0.1:5000/exam/delete_record/${token.$oid}`)
+            .then(response => {
+              this.getdata();
+            });
+        }
       });
     },
-    editItem: function() {}
+    editItem: function(value) {
+      this.canShowupdate = true;
+      this.canShowadd = false;
+      this.canShowname = true;
+      this.canShowbutton = true;
+      this.canShowtable = true;
+      this.canShowtopper = false;
+      this.canShowaveragepersubject = true;
+      this.showAverage = false;
+      this.canShowrollno = true;
+      let data = JSON.parse(localStorage.getItem("array"));
+      data.forEach((element, index) => {
+        if (element.roll_no === value.roll_no) {
+          localStorage.setItem("array", JSON.stringify(element._id));
+          this.newElement = {
+            name: element.name,
+            math: element.math,
+            english: element.english,
+            science: element.science,
+            physics: element.physics,
+            history: element.history,
+            eco: element.eco
+          };
+        }
+      });
+    },
+    updatedata: function(value) {
+      let math = Number(this.newElement.math);
+      let english = Number(this.newElement.english);
+      let science = Number(this.newElement.science);
+      let physics = Number(this.newElement.physics);
+      let history = Number(this.newElement.history);
+      let eco = Number(this.newElement.eco);
+      let token = JSON.parse(localStorage.getItem("array"));
+      let url = `http://127.0.0.1:5000/exam/update_record/${token.$oid}`;
+      let response = this.axios({
+        method: "put",
+        url: url,
+        data: {
+          math: math,
+          english: english,
+          science: science,
+          physics: physics,
+          history: history,
+          eco: eco
+        }
+      }).then(response => {
+        this.getdata();
+        this.newElement = {
+          name: "",
+          math: "",
+          english: "",
+          science: "",
+          physics: "",
+          history: "",
+          eco: ""
+        };
+        this.modalShow = !this.modalShow;
+      });
+    },
+    getdata: function() {
+      this.axios("http://127.0.0.1:5000/exam/get_all").then(res => {
+        var somedata = res.data;
+        somedata.forEach((element, index) => {
+          element["roll_no"] = index + 1;
+        });
+        this.studentable = somedata;
+        localStorage.setItem("array", JSON.stringify(somedata));
+      });
+    }
   }
 };
 </script>
