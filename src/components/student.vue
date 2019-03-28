@@ -1,6 +1,83 @@
 <template>
-  <div>
-    <b-modal v-model="modalShow">
+  <div class="setheight">
+    <div class="wrapper">
+      <nav id="sidebar" :class="{'active': canShowmenu}">
+        <ul class="list-unstyled components">
+          <li>
+            <a href="#" v-on:click="showstudent">All Student</a>
+          </li>
+          <li>
+            <a href="#" v-on:click="modalShow=!modalShow">Add Student</a>
+          </li>
+          <li>
+            <a href="#" v-on:click="findtopper">Topper</a>
+          </li>
+          <li>
+            <a href="#" v-on:click="averagepersubject">Average per Subject</a>
+          </li>
+          <li>
+            <a href="#" v-on:click="totalaverage">Average</a>
+          </li>
+        </ul>
+      </nav>
+      <div id="content">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+          <div class="container-fluid">
+            <button
+              type="button"
+              id="sidebarCollapse"
+              class="btn btn-info"
+              v-on:click="displaymenu"
+            >&#9776;</button>
+          </div>
+        </nav>
+        <table class="table table-bordered text-centered" v-if="canShowtable">
+          <thead class="thead-dark">
+            <th v-if="canShowrollno">Roll no</th>
+            <th v-if="canShowname">Name</th>
+            <th v-if="canShowaveragepersubject">Math</th>
+            <th v-if="canShowaveragepersubject">English</th>
+            <th v-if="canShowaveragepersubject">Science</th>
+            <th v-if="canShowaveragepersubject">Physics</th>
+            <th v-if="canShowaveragepersubject">History</th>
+            <th v-if="canShowaveragepersubject">eco</th>
+            <th v-if="canShowtopper">Total</th>
+            <th v-if="showAverage">Average Score</th>
+            <th v-if="canShowbutton">Delete</th>
+            <th v-if="canShowbutton">Edit</th>
+          </thead>
+          <tbody>
+            <tr v-for="(newElement,index) in  paginationStudentable" v-bind:key="index">
+              <td v-if="canShowrollno">{{newElement.roll_no}}</td>
+              <td v-if="canShowname">{{newElement.name}}</td>
+              <td v-if="canShowaveragepersubject">{{newElement.math}}</td>
+              <td v-if="canShowaveragepersubject">{{newElement.english}}</td>
+              <td v-if="canShowaveragepersubject">{{newElement.science}}</td>
+              <td v-if="canShowaveragepersubject">{{newElement.physics}}</td>
+              <td v-if="canShowaveragepersubject">{{newElement.history}}</td>
+              <td v-if="canShowaveragepersubject">{{newElement.eco}}</td>
+              <td v-if="canShowtopper">{{newElement.total}}</td>
+              <td v-if="showAverage">{{newElement.average_score}}</td>
+              <td v-if="canShowbutton">
+                <a href="#" v-on:click="deleteItem(newElement,index)">Delete</a>
+              </td>
+              <td v-if="canShowbutton">
+                <a
+                  href="#"
+                  v-on:click="editItem(newElement, index)"
+                  @click="modalShow = !modalShow"
+                >Edit</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <center>
+          <button @click="prevPage" v-if="canShowprevious">Previous</button>
+          <button @click="nextPage" v-if="canShownext">Next</button>
+        </center>
+      </div>
+    </div>
+    <b-modal v-model="modalShow" hide-footer hide-header>
       <b-form v-on:submit.prevent>
         <b-row>
           <b-col lg="5">Name:</b-col>
@@ -55,52 +132,6 @@
         </center>
       </b-form>
     </b-modal>
-    <b-container class="d-flex justify-content-around">
-      <b-button v-on:click="modalShow=!modalShow">Add Student</b-button>
-      <b-button v-on:click="findtopper">Topper</b-button>
-      <b-button v-on:click="averagepersubject">Average per Subject</b-button>
-      <b-button v-on:click="totalaverage">Average</b-button>
-    </b-container>
-    <table class="table table-bordered text-centered" v-if="canShowtable">
-      <thead>
-        <th v-if="canShowrollno">Roll no</th>
-        <th v-if="canShowname">Name</th>
-        <th v-if="canShowaveragepersubject">Math</th>
-        <th v-if="canShowaveragepersubject">English</th>
-        <th v-if="canShowaveragepersubject">Science</th>
-        <th v-if="canShowaveragepersubject">Physics</th>
-        <th v-if="canShowaveragepersubject">History</th>
-        <th v-if="canShowaveragepersubject">eco</th>
-        <th v-if="canShowtopper">Total</th>
-        <th v-if="showAverage">Average Score</th>
-        <th v-if="canShowbutton">Delete</th>
-        <th v-if="canShowbutton">Edit</th>
-      </thead>
-      <tbody>
-        <tr v-for="(newElement,index) in studentable" v-bind:key="index">
-          <td v-if="canShowrollno">{{newElement.roll_no}}</td>
-          <td v-if="canShowname">{{newElement.name}}</td>
-          <td v-if="canShowaveragepersubject">{{newElement.math}}</td>
-          <td v-if="canShowaveragepersubject">{{newElement.english}}</td>
-          <td v-if="canShowaveragepersubject">{{newElement.science}}</td>
-          <td v-if="canShowaveragepersubject">{{newElement.physics}}</td>
-          <td v-if="canShowaveragepersubject">{{newElement.history}}</td>
-          <td v-if="canShowaveragepersubject">{{newElement.eco}}</td>
-          <td v-if="canShowtopper">{{newElement.total}}</td>
-          <td v-if="showAverage">{{newElement.average_score}}</td>
-          <td v-if="canShowbutton">
-            <a href="#" v-on:click="deleteItem(newElement,index)">Delete</a>
-          </td>
-          <td v-if="canShowbutton">
-            <a
-              href="#"
-              v-on:click="editItem(newElement, index)"
-              @click="modalShow = !modalShow"
-            >Edit</a>
-          </td>
-        </tr>
-      </tbody>
-    </table>
   </div>
 </template>
 
@@ -121,7 +152,9 @@ export default {
         history: "",
         eco: ""
       },
-      canShowtable: false,
+      pageSize: 6,
+      currentPage: 1,
+      canShowtable: true,
       canShowtopper: false,
       canShowaveragepersubject: true,
       canShowbutton: true,
@@ -129,13 +162,26 @@ export default {
       showAverage: false,
       canShowrollno: true,
       canShowupdate: false,
-      canShowadd: true
+      canShowadd: true,
+      canShowmenu: true,
+      canShowprevious: false,
+      canShownext: false
     };
   },
   created() {
     this.getdata();
   },
   methods: {
+    showstudent: function() {
+      this.canShowtable = true;
+      this.canShowtopper = false;
+      this.canShowaveragepersubject = true;
+      this.canShowname = true;
+      this.canShowrollno = true;
+      this.canShowbutton = true;
+      this.showAverage = false;
+      this.getdata();
+    },
     adddata: function() {
       this.canShowtable = true;
       this.canShowtopper = false;
@@ -179,17 +225,22 @@ export default {
     },
     findtopper: function() {
       this.canShowtopper = true;
+      this.canShowprevious = false;
+      this.canShownext = false;
       this.canShowtable = true;
       this.canShowaveragepersubject = false;
       this.canShowname = true;
       this.showAverage = false;
       this.canShowbutton = false;
       this.canShowrollno = false;
+      this.studentable = [];
       this.axios("http://127.0.0.1:5000/exam/get_max").then(response => {
-        this.studentable = response;
+        this.studentable.push(response.data);
       });
     },
     averagepersubject: function() {
+      this.canShowprevious = false;
+      this.canShownext = false;
       this.canShowbutton = false;
       this.canShowtable = true;
       this.canShowname = false;
@@ -202,6 +253,8 @@ export default {
       });
     },
     totalaverage: function() {
+      this.canShowprevious = false;
+      this.canShownext = false;
       this.canShowname = false;
       this.canShowbutton = false;
       this.canShowtable = true;
@@ -300,8 +353,34 @@ export default {
         somedata.forEach((element, index) => {
           element["roll_no"] = index + 1;
         });
+        somedata = somedata.reverse();
         this.studentable = somedata;
         localStorage.setItem("array", JSON.stringify(somedata));
+      });
+    },
+    displaymenu: function() {
+      this.canShowmenu = !this.canShowmenu;
+    },
+    nextPage: function() {
+      console.log(this.studentable.length);
+      if (this.currentPage * this.pageSize < this.studentable.length)
+        this.currentPage++;
+      this.canShowprevious = true;
+    },
+    prevPage: function() {
+      if (this.currentPage > 1) this.currentPage--;
+    }
+  },
+  computed: {
+    paginationStudentable: function() {
+      /* eslint-disable */
+      return this.studentable.filter((row, index) => {
+        let start = (this.currentPage - 1) * this.pageSize;
+        let end = this.currentPage * this.pageSize;
+        if (index >= start && index < end) return true;
+        if (index > 4) {
+          this.canShownext = true;
+        }
       });
     }
   }
@@ -309,7 +388,42 @@ export default {
 </script>
 
 <style>
-.table {
-  margin-top: 2%;
+html {
+  height: 100%;
+}
+body {
+  height: 100%;
+}
+.wrapper {
+  display: flex;
+  width: 100%;
+  align-items: stretch;
+  height: 100%;
+}
+.setheight {
+  height: 100%;
+}
+#sidebar {
+  min-width: 250px;
+  max-width: 250px;
+  background: #595959;
+  padding-top: 4%;
+}
+#sidebar.active {
+  margin-left: -250px;
+}
+li a {
+  padding: 10px;
+  color: #ffffff;
+  display: block;
+  text-decoration: none;
+}
+li a:hover {
+  color: #000000;
+  background: #fff;
+  text-decoration: none;
+}
+#content {
+  width: 100%;
 }
 </style>
